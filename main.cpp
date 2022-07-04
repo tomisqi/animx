@@ -29,6 +29,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // Register the window class
     RegisterClassEx(&wc);
 
+    // Calculate the size of the client area
+    RECT rect = { 0, 0, 1000, 1000};    // set the size, but not the position
+    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);    // adjust the size
+
     // Create the window and use the result as the handle
     hWnd = CreateWindowEx(NULL,
                           L"WindowClass1",      // name of the window class
@@ -36,8 +40,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
                           WS_OVERLAPPEDWINDOW,  // window style
                           300,                  // x-position of the window
                           0,                    // y-position of the window
-                          1000,                 // width of the window
-                          1000,                 // height of the window
+                          rect.right - rect.left,                 // width of the window
+                          rect.bottom - rect.top,                 // height of the window
                           NULL,                 // we have no parent window, NULL
                           NULL,                 // we aren't using menus, NULL
                           hInstance,            // application handle
@@ -51,16 +55,28 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     //
    
     // This struct holds Windows event messages
-    MSG msg;
+    MSG msg = {0};
 
-    // Wait for the next message in the queue, store the result in 'msg'
-    while (GetMessage(&msg, NULL, 0, 0))
+    // Enter the infinite message loop
+    while (TRUE)
     {
-        // Translate keystroke messages into the right format
-        TranslateMessage(&msg);
+        // Check to see if any messages are waiting in the queue
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            // Translate keystroke messages into the right format
+            TranslateMessage(&msg);
 
-        // Send the message to the WindowProc function
-        DispatchMessage(&msg);
+            // Send the message to the WindowProc function
+            DispatchMessage(&msg);
+
+            // Check to see if it's time to quit
+            if (msg.message == WM_QUIT)
+                break;
+        }
+        else
+        {
+            // @todo: Game code
+        }
     }
 
     // Return this part of the WM_QUIT message to Windows
